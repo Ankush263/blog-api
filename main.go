@@ -6,6 +6,8 @@ import (
 	"os"
 
 	"github.com/Ankush263/blog-api/internal/db"
+	"github.com/Ankush263/blog-api/internal/handler"
+	"github.com/Ankush263/blog-api/internal/repository"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 
@@ -29,7 +31,15 @@ func main() {
 	}
 	defer dbConn.Close()
 
+	// repo := repository.NewPostRepository(dbConn)
+	// handler := handler.NewPostHandler(repo)
+
+	repo := repository.NewPostRepository(dbConn)
+	handler := handler.NewPostHandler(repo)
+
 	r := mux.NewRouter()
+
+	r.HandleFunc("/posts", handler.Create).Methods("POST")
 
 	log.Println("Server is running on PORT 8000")
 	log.Fatal(http.ListenAndServe(":8000", r))
