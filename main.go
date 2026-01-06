@@ -7,6 +7,7 @@ import (
 
 	"github.com/Ankush263/blog-api/internal/db"
 	"github.com/Ankush263/blog-api/internal/handler"
+	"github.com/Ankush263/blog-api/internal/middleware"
 	"github.com/Ankush263/blog-api/internal/repository"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
@@ -38,6 +39,9 @@ func main() {
 	handler := handler.NewPostHandler(repo)
 
 	r := mux.NewRouter()
+
+	r.Use(middleware.Logging)
+	r.Use(middleware.Recover)
 
 	r.HandleFunc("/posts", handler.Create).Methods("POST")
 
