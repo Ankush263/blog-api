@@ -45,6 +45,10 @@ func main() {
 	r.Use(middleware.CORS)
 
 	r.HandleFunc("/posts", handler.Create).Methods("POST")
+	r.HandleFunc("/posts", handler.GetAll).Methods("GET")
+	r.HandleFunc("/posts/{id}", handler.GetById).Methods("GET")
+	r.HandleFunc("/posts/{id}", handler.Update).Methods("PATCH")
+	r.HandleFunc("/posts/{id}", handler.Delete).Methods("DELETE")
 
 	log.Println("Server is running on PORT 8000")
 	log.Fatal(http.ListenAndServe(":8000", r))

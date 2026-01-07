@@ -44,6 +44,29 @@ func (h *PostHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(posts)
 }
 
+func (h *PostHandler) GetList(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+
+	limit := 10
+	offset := 0
+	search := q.Get("search")
+
+	if l := q.Get("limit"); l != "" {
+		limit, _ = strconv.Atoi(l)
+	}
+	if o := q.Get("offset"); o != "" {
+		offset, _ = strconv.Atoi(o)
+	}
+
+	posts, err := h.repo.List(r.Context(), limit, offset, search)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	
+	json.NewEncoder(w).Encode(posts)
+}
+
 func (h *PostHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 

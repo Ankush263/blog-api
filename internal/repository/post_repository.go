@@ -61,6 +61,36 @@ func (r *PostRepository) GetAll(ctx context.Context) ([]model.Post, error) {
 	return posts, nil
 }
 
+func (r *PostRepository) List(ctx context.Context, limit int, offset int, search string) ([]model.Post, error) {
+	query := `
+		SELETC * FROM posts
+		WHERE ($1 = '' OR title ILIKE '%' || $1 || '%')
+		ORDER BY created_at DESC
+		LIMIT $2 OFFSET $3
+	`
+	
+	rows, err := r.db.QueryContext(ctx, query, search, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var posts []model.Post
+	for rows.Next() {
+		var p model.Post
+		if err := rows.Scan(
+			&p.ID,
+			&p.CreatedAt,
+			&p.Title,
+			&p.Content,
+		); err != nil {
+			return nil, err
+		}
+		posts = append(posts, p)
+	}
+	return posts, nil
+}
+
 func (r *PostRepository) GetById(ctx context.Context, id int) (*model.Post, error) {
 	query := `
 		SELECT * FROM posts p
