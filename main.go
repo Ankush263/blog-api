@@ -42,6 +42,7 @@ func main() {
 
 	r.Use(middleware.Logging)
 	r.Use(middleware.Recover)
+	r.Use(middleware.CORS)
 
 	r.HandleFunc("/posts", handler.Create).Methods("POST")
 
