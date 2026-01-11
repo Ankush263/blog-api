@@ -32,11 +32,11 @@ func main() {
 	}
 	defer dbConn.Close()
 
-	// repo := repository.NewPostRepository(dbConn)
-	// handler := handler.NewPostHandler(repo)
-
 	repo := repository.NewPostRepository(dbConn)
-	handler := handler.NewPostHandler(repo)
+	userRepo := repository.NewUserRepo(dbConn)
+
+	postHandler := handler.NewPostHandler(repo)
+	authHandler := handler.NewAuthHandler(userRepo)
 
 	r := mux.NewRouter()
 
@@ -44,11 +44,17 @@ func main() {
 	r.Use(middleware.Recover)
 	r.Use(middleware.CORS)
 
-	r.HandleFunc("/posts", handler.Create).Methods("POST")
-	r.HandleFunc("/posts", handler.GetAll).Methods("GET")
-	r.HandleFunc("/posts/{id}", handler.GetById).Methods("GET")
-	r.HandleFunc("/posts/{id}", handler.Update).Methods("PATCH")
-	r.HandleFunc("/posts/{id}", handler.Delete).Methods("DELETE")
+	r.HandleFunc("/signup", authHandler.Signup).Methods("POST")
+	r.HandleFunc("/login", authHandler.Login).Methods("POST")
+
+	secured := r.PathPrefix("/posts").Subrouter()
+	secured.Use(middleware.Auth)
+
+	r.HandleFunc("", postHandler.Create).Methods("POST")
+	r.HandleFunc("", postHandler.GetAll).Methods("GET")
+	r.HandleFunc("/{id}", postHandler.GetById).Methods("GET")
+	r.HandleFunc("/{id}", postHandler.Update).Methods("PATCH")
+	r.HandleFunc("/{id}", postHandler.Delete).Methods("DELETE")
 
 	log.Println("Server is running on PORT 8000")
 	log.Fatal(http.ListenAndServe(":8000", r))
